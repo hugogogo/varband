@@ -22,5 +22,5 @@ Collate:
     'misc.R'
     'utils.R'
 LinkingTo: Rcpp, RcppArmadillo
-Imports: Rcpp, RcppArmadillo, stats, graphics
+Imports: Rcpp, stats, graphics
 

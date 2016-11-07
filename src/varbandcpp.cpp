@@ -1,5 +1,11 @@
 #include <cmath>
-#include <RcppArmadillo.h>
+// we only include RcppArmadillo.h which pulls Rcpp.h in for us
+#include "RcppArmadillo.h"
+
+// via the depends attribute we tell Rcpp to create hooks for
+// RcppArmadillo so that the build process will know what to do
+//
+// [[Rcpp::depends(RcppArmadillo)]]
 #define TOL 1.0e-6
 #define SMALL 1.0e-15
 #define MAXIT 1.0e+3
