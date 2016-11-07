@@ -1,0 +1,23 @@
+Package: varband
+Type: Package
+Title: Variable Banding of Large Precision Matrices
+Version: 0.0.0.900
+Authors@R: person("Guo", "Yu", email = "gy63@cornell.edu", role = c("aut", "cre"))
+Description: Implementation of the variable banding procedure for modeling local dependence and estimating precision matrices that is introduced in Yu & Bien (2016).
+License: GPL-3
+LazyData: TRUE
+Suggests:
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1
+Collate:
+    'model_gen.R'
+    'refit.R'
+    'varband_cv.R'
+    'varband_path.R'
+    'RcppExports.R'
+    'misc.R'
+    'utils.R'
+LinkingTo: Rcpp, RcppArmadillo
+Imports: Rcpp, RcppArmadillo
