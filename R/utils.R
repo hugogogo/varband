@@ -16,6 +16,7 @@
 #' true <- varband_gen(p = p, block = 5)
 #' matimage(true)
 #' @export
+#' @import graphics
 matimage <- function(Mat, main = NULL){
   tmppar <- par(pty = "s")
   image(sign(t(apply(Mat, 2, rev))), axes = FALSE, col = c("gray50","white","black"), main = main)

@@ -33,6 +33,7 @@ sample_gen<-function(L, n){
 #' @examples
 #' true_ar <- ar_gen(p = 50, phi = c(0.5, -0.4, 0.1))
 #' @export
+#' @import stats
 ar_gen<-function(p, phi_vec){
   set.seed(123)
   ii <- toeplitz(1:p)
