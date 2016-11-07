@@ -3,7 +3,6 @@ Type: Package
 Title: Variable Banding of Large Precision Matrices
 Version: 0.9.0
 Authors@R: person("Guo", "Yu", email = "gy63@cornell.edu", role = c("aut", "cre"))
-Maintainer: 'Guo Yu <gy63@cornell.edu>'
 Description: Implementation of the variable banding procedure for modeling local dependence and estimating precision matrices that is introduced in Yu & Bien (2016) and is available at <https://arxiv.org/abs/1604.07451>.
 License: GPL-3
 LazyData: TRUE
