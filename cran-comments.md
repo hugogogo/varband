@@ -4,6 +4,9 @@
 * win-builder (devel and release)
 
 ## R CMD check results
-0 errors | 0 warnings | 4 notes
+0 errors | 0 warnings | 1 note
 
-R CMD check succeeded
+There is 1 note:
+* Maintainer: ‘Guo Yu <gy63@cornell.edu>’
+
+The maintainer information is integrated into Authors@R, following Hedley Wickham's suggestion in his book 'R packages'.
