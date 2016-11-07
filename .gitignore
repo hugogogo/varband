@@ -1,3 +1,6 @@
 inst/doc
 .Rproj.user
-vignettes
+.Rhistory
+.RData
+.Ruserdata
+.DS_Store
