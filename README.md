@@ -1,3 +1,5 @@
+# varband
+
 The `varband` package contains the implementations of the variable banding method for learning local dependence and 
 estimating large sparse precision matrix in the setting where variables have a natural ordering. 
 The details of the method can be found in 
