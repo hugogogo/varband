@@ -5,7 +5,12 @@ estimating large sparse precision matrix in the setting where variables have a n
 The details of the method can be found in 
 [Yu, Bien (2016) *Learning Local Dependence in Ordered Data* (under revision)](http://arxiv.org/abs/1604.07451).
 
-To install `varband` from [github](http://github.com), type in R console
+`varband` is now on CRAN. To install `varband`, type in R console
+```R
+install.packages("varband")
+```
+
+To install `varband` from [github](http://github.com), which is usually more up-to-date, type in R console
 ```R
 devtools::install_github("hugogogo/varband", build_vignettes = TRUE)
 ```
