@@ -28,7 +28,7 @@ void soft_threshold(const arma::vec& beta, const double lam, const int r, arma::
     else if (beta(l) < -lam)
       result(l) = beta(l) + lam;
     else
-      result(l) = 0;
+      result(l) = 0.0;
   }
 }
 
@@ -44,7 +44,8 @@ void soft_threshold(const arma::vec& beta, const double lam, const int r, arma::
 ////' @param gamma priaml variable in ADMM
 // [[Rcpp::export]]
 void close_update(const arma::mat& S, const arma::mat& S_inv, const int r,
-                       const double rho, const arma::vec& u, const arma::vec& gamma, arma::vec& res){
+                       const double rho, const arma::vec& u,
+                       const arma::vec& gamma, arma::vec& res){
   // This performs the closed updated for beta
   // see Section 3 in the paper
   arma::vec vec_tmp = S_inv * S.col(r-1).head(r-1);
@@ -93,7 +94,7 @@ void elliproj_u(const arma::vec& y, const double tau, arma::vec& pp){
 // [[Rcpp::export]]
 double rootfind(const arma::vec& pp, const arma::vec& ww, double tau, int l){
   // perform rooting finding
-  // using a combinationg of Newton's method and bisection
+  // using a combination of Newton's method and bisection
   // see Numerical Recipes (3rd Edition, 2007) pp.460-461
   double xup = std::sqrt(arma::accu(arma::square(ww % pp.head(l+1)))) / tau;
   double xlo = ((xup-ww(l) * ww(l)) > 0.0 ? (xup-ww(l) * ww(l)) : 0.0);
@@ -382,7 +383,7 @@ arma::vec rowadmm_lasso(const arma::mat& S, const arma::vec& init_row,
 
 //' Compute the varband estimate for a fixed tuning parameter value with different penalty options.
 //'
-//' Solves the main optimization problem in Yu & Bien (2016):
+//' Solves the main optimization problem in Yu & Bien (2017):
 //' \deqn{min_L -2 \sum_{r=1}^p L_{rr} + tr(SLL^T) + lam * \sum_{r=2}^p P_r(L_{r.})}{min_L -2 sum_{r=1}^p L_{rr} + tr(SLL^T) + lam * sum_{r=2}^p P_r(L_{r.})}
 //' where \deqn{P_r(L_{r.}) = \sum_{\ell = 2}^{r-1} \left(\sum_{m=1}^\ell w_{\ell m}^2 L_{rm}^2\right)^{1/2}}{P_r(L_r.) = sum_{l=2}^{r-1} (sum_m=1^l w^2_lm L^2_rm)^{1/2}}
 //' or \deqn{P_r(L_{r.}) = \sum_{\ell = 1}^{r-1} |L_{r\ell}|}
@@ -392,10 +393,11 @@ arma::vec rowadmm_lasso(const arma::mat& S, const arma::vec& init_row,
 //' see paper for more explanation.
 //' @param S The sample covariance matrix
 //' @param lambda Non-negative tuning parameter. Controls sparsity level.
+//' @param init Initial estimate of L. Default is a closed-form diagonal estimate of L.
+//' @param K Integer between 0 and p - 1 (default), indicating the maximum bandwidth in the resulting estimate. A small value of K will result in a sparse estimate and small computing time.
 //' @param w Logical. Should we use weighted version of the penalty or not? If \code{TRUE}, we use general weight. If \code{FALSE}, use unweighted penalty. Default is \code{FALSE}.
 //' @param lasso Logical. Should we use l1 penalty instead of hierarchical group lasso penalty? Note that by using l1 penalty, we lose the banded structure in the resulting estimate. Default is \code{FALSE}.
-//' @param init Initial estimate of L. Default is a closed-form diagonal estimate of L.
-//' @return Returns the variable banding estimate of L, where L^TL = Omega.
+//' @return Returns the variable banding estimate of L, at most K banded, where L^TL = Omega.
 //'
 //' @examples
 //' set.seed(123)
@@ -406,6 +408,8 @@ arma::vec rowadmm_lasso(const arma::mat& S, const arma::vec& init_row,
 //' init <- diag(1/sqrt(diag(S)))
 //' # unweighted estimate
 //' L_unweighted <- varband(S, lambda = 0.1, init, w = FALSE)
+//' # at most 10-banded unweighted estimate
+//' L_unweighted_K10 <- varband(S, lambda = 0.1, init, w = FALSE, K = 10)
 //' # weighted estimate
 //' L_weighted <- varband(S, lambda = 0.1, init, w = TRUE)
 //' # lasso estimate
@@ -414,20 +418,37 @@ arma::vec rowadmm_lasso(const arma::mat& S, const arma::vec& init_row,
 //'
 //' @export
 // [[Rcpp::export]]
-arma::mat varband(arma::mat S, double lambda, arma::mat init, bool w = false,
+arma::mat varband(arma::mat S, double lambda, arma::mat init,
+                  int K = -1,
+                  bool w = false,
                   bool lasso = false){
   int p = S.n_rows;
+  // if K is not specified or incorrectly specified
+  // K is at most p - 1, i.e., there is no constraint on the maximum bandwidth
+  if (K < 0 || K > p - 1)
+    K = p - 1;
+
   arma::mat L(p, p);
   L.zeros();
   L(0, 0) = 1/(std::sqrt(S(0, 0)));
   init = init.t();
   if (lasso){
-    for (int r = 1; r < p; r++)
-      L.col(r).head(r+1) = rowadmm_lasso(S.submat(0, 0, r, r), init.col(r).head(r+1), lambda);
+    // from 2nd to the K+1 -th row, no constraint
+    for (int r = 1; r < K + 1; r++){
+      L.col(r).head(r + 1) = rowadmm_lasso(S.submat(0, 0, r, r), init.col(r).head(r + 1), lambda);
+    }
+    // from K+2 -th row to the p-th row, only consider a problem with K predictors
+    for (int r = K + 1; r < p; r++)
+      L.col(r).subvec(r - K, r) = rowadmm_lasso(S.submat(r - K, r - K, r, r), init.col(r).subvec(r - K, r), lambda);
   }
   else{
-    for (int r = 1; r < p; r++)
-      L.col(r).head(r+1) = rowadmm(S.submat(0, 0, r, r), init.col(r).head(r+1), lambda, w);
+    // from 2nd to the K+1 -th row, no constraint
+    for (int r = 1; r < K + 1; r++){
+      L.col(r).head(r + 1) = rowadmm(S.submat(0, 0, r, r), init.col(r).head(r + 1), lambda, w);
+    }
+    // from K+2 -th row to the p-th row, only consider a problem with K predictors
+    for (int r = K + 1; r < p; r++)
+      L.col(r).subvec(r - K, r) = rowadmm(S.submat(r - K, r - K, r, r), init.col(r).subvec(r - K, r), lambda, w);
   }
   return L.t();
 }

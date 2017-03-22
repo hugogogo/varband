@@ -117,17 +117,18 @@ BEGIN_RCPP
 END_RCPP
 }
 // varband
-arma::mat varband(arma::mat S, double lambda, arma::mat init, bool w, bool lasso);
-RcppExport SEXP varband_varband(SEXP SSEXP, SEXP lambdaSEXP, SEXP initSEXP, SEXP wSEXP, SEXP lassoSEXP) {
+arma::mat varband(arma::mat S, double lambda, arma::mat init, int K, bool w, bool lasso);
+RcppExport SEXP varband_varband(SEXP SSEXP, SEXP lambdaSEXP, SEXP initSEXP, SEXP KSEXP, SEXP wSEXP, SEXP lassoSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
     Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type init(initSEXP);
+    Rcpp::traits::input_parameter< int >::type K(KSEXP);
     Rcpp::traits::input_parameter< bool >::type w(wSEXP);
     Rcpp::traits::input_parameter< bool >::type lasso(lassoSEXP);
-    rcpp_result_gen = Rcpp::wrap(varband(S, lambda, init, w, lasso));
+    rcpp_result_gen = Rcpp::wrap(varband(S, lambda, init, K, w, lasso));
     return rcpp_result_gen;
 END_RCPP
 }

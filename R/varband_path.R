@@ -5,6 +5,7 @@
 #' @param S The sample covariance matrix
 #' @param w Logical. Should we use weighted version of the penalty or not? If \code{TRUE}, we use general weight. If \code{FALSE}, use unweighted penalty. Default is \code{FALSE}.
 #' @param lasso Logical. Should we use l1 penalty instead of hierarchical group lasso penalty? Note that by using l1 penalty, we lose the banded structure in the resulting estimate. And when using l1 penalty, the becomes CSCS (Convex Sparse Cholesky Selection) introduced in Khare et al. (2016). Default value for \code{lasso} is \code{FALSE}.
+#' @param K Integer between 0 and p - 1 (default), indicating the maximum bandwidth in the resulting estimate. A small value of K will result in a sparse estimate and small computing time.
 #' @param lamlist A list of non-negative tuning parameters \code{lambda}.
 #' @param nlam If lamlist is not provided, create a lamlist with length \code{node}. Default is 60.
 #' @param flmin if lamlist is not provided, create a lamlist with ratio of the smallest and largest lambda in the list. Default is 0.01.
@@ -22,7 +23,8 @@
 #' @export
 #'
 #' @seealso \code{\link{varband}} \code{\link{varband_cv}}
-varband_path <- function(S, w = FALSE, lasso = FALSE, lamlist = NULL, nlam = 60, flmin = 0.01){
+varband_path <- function(S, w = FALSE, lasso = FALSE, K = -1,
+                         lamlist = NULL, nlam = 60, flmin = 0.01){
   p <- ncol(S)
   stopifnot(p == nrow(S))
 
@@ -44,7 +46,8 @@ varband_path <- function(S, w = FALSE, lasso = FALSE, lamlist = NULL, nlam = 60,
     {
       #      cat(i)
       result[, , i] <- varband(S = S, lambda = lamlist[i],
-                               init = result[, , i-1], w = w, lasso = lasso)
+                               init = result[, , i-1],
+                               K = K, w = w, lasso = lasso)
     }
   }
   return(list(path = result, lamlist = lamlist))
