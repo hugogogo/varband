@@ -4,3 +4,9 @@ inst/doc
 .RData
 .Ruserdata
 .DS_Store
+DESCRIPTION
+.aux
+.log
+.out
+.synctex.gz
+.tex
