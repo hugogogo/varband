@@ -3,7 +3,11 @@
 The `varband` package contains the implementations of the variable banding method for learning local dependence and 
 estimating large sparse precision matrix in the setting where variables have a natural ordering. 
 The details of the method can be found in 
+<<<<<<< HEAD
 [Yu, Bien (2017) *Learning Local Dependence in Ordered Data* (Journal of Machine Learning Research (2017), 18(42), 1-60)](http://arxiv.org/abs/1604.07451).
+=======
+[Yu, Bien (2017) *Learning Local Dependence in Ordered Data* (Accepted to the Journal of Machine Learning Research)](http://arxiv.org/abs/1604.07451).
+>>>>>>> 222cbfa9eaf7ea1607ea448bd4daa9e21db76b81
 
 `varband` is now on CRAN. To install `varband`, type in R console
 ```R

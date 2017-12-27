@@ -1,4 +1,5 @@
 bibentry(bibtype = "article",
+<<<<<<< HEAD
 title = "Learning Local Dependence In Ordered Data",
 author = c(person("Guo", "Yu"), person("Jacob", "Bien")),
 year = {2017},
@@ -7,3 +8,10 @@ volume  = "18",
 number  = "42",
 pages   = "1-60",
 url     = "http://jmlr.org/papers/v18/16-198.html”)
+=======
+         title = "Learning Local Dependence In Ordered Data",
+         author = c(person("Guo", "Yu"), person("Jacob", "Bien")),
+         year = {2017},
+         journal = "Accepted to the Journal of Machine Learning Research",
+	 url = "https://arxiv.org/abs/1604.07451")
+>>>>>>> 222cbfa9eaf7ea1607ea448bd4daa9e21db76b81
