@@ -35,7 +35,7 @@ rowadmm_lasso <- function(S, init_row, lambda, tol = 1.0e-4, itermax = 1e+6L) {
 
 #' Compute the varband estimate for a fixed tuning parameter value with different penalty options.
 #'
-#' Solves the main optimization problem in Yu & Bien (2016):
+#' Solves the main optimization problem in Yu & Bien (2017):
 #' \deqn{min_L -2 \sum_{r=1}^p L_{rr} + tr(SLL^T) + lam * \sum_{r=2}^p P_r(L_{r.})}{min_L -2 sum_{r=1}^p L_{rr} + tr(SLL^T) + lam * sum_{r=2}^p P_r(L_{r.})}
 #' where \deqn{P_r(L_{r.}) = \sum_{\ell = 2}^{r-1} \left(\sum_{m=1}^\ell w_{\ell m}^2 L_{rm}^2\right)^{1/2}}{P_r(L_r.) = sum_{l=2}^{r-1} (sum_m=1^l w^2_lm L^2_rm)^{1/2}}
 #' or \deqn{P_r(L_{r.}) = \sum_{\ell = 1}^{r-1} |L_{r\ell}|}
@@ -45,10 +45,11 @@ rowadmm_lasso <- function(S, init_row, lambda, tol = 1.0e-4, itermax = 1e+6L) {
 #' see paper for more explanation.
 #' @param S The sample covariance matrix
 #' @param lambda Non-negative tuning parameter. Controls sparsity level.
+#' @param init Initial estimate of L. Default is a closed-form diagonal estimate of L.
+#' @param K Integer between 0 and p - 1 (default), indicating the maximum bandwidth in the resulting estimate. A small value of K will result in a sparse estimate and small computing time.
 #' @param w Logical. Should we use weighted version of the penalty or not? If \code{TRUE}, we use general weight. If \code{FALSE}, use unweighted penalty. Default is \code{FALSE}.
 #' @param lasso Logical. Should we use l1 penalty instead of hierarchical group lasso penalty? Note that by using l1 penalty, we lose the banded structure in the resulting estimate. Default is \code{FALSE}.
-#' @param init Initial estimate of L. Default is a closed-form diagonal estimate of L.
-#' @return Returns the variable banding estimate of L, where L^TL = Omega.
+#' @return Returns the variable banding estimate of L, at most K banded, where L^TL = Omega.
 #'
 #' @examples
 #' set.seed(123)
@@ -59,6 +60,8 @@ rowadmm_lasso <- function(S, init_row, lambda, tol = 1.0e-4, itermax = 1e+6L) {
 #' init <- diag(1/sqrt(diag(S)))
 #' # unweighted estimate
 #' L_unweighted <- varband(S, lambda = 0.1, init, w = FALSE)
+#' # at most 10-banded unweighted estimate
+#' L_unweighted_K10 <- varband(S, lambda = 0.1, init, w = FALSE, K = 10)
 #' # weighted estimate
 #' L_weighted <- varband(S, lambda = 0.1, init, w = TRUE)
 #' # lasso estimate
@@ -66,7 +69,7 @@ rowadmm_lasso <- function(S, init_row, lambda, tol = 1.0e-4, itermax = 1e+6L) {
 #' @seealso \code{\link{varband_path}} \code{\link{varband_cv}}
 #'
 #' @export
-varband <- function(S, lambda, init, w = FALSE, lasso = FALSE) {
-    .Call('varband_varband', PACKAGE = 'varband', S, lambda, init, w, lasso)
+varband <- function(S, lambda, init, K = -1L, w = FALSE, lasso = FALSE) {
+    .Call('varband_varband', PACKAGE = 'varband', S, lambda, init, K, w, lasso)
 }
 

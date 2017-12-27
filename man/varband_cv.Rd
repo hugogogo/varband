@@ -4,8 +4,8 @@
 \alias{varband_cv}
 \title{Perform nfolds-cross validation}
 \usage{
-varband_cv(x, w = FALSE, lasso = FALSE, lamlist = NULL, nlam = 60,
-  flmin = 0.01, folds = NULL, nfolds = 5)
+varband_cv(x, w = FALSE, lasso = FALSE, K = -1, lamlist = NULL,
+  nlam = 60, flmin = 0.01, folds = NULL, nfolds = 5)
 }
 \arguments{
 \item{x}{A n-by-p sample matrix, each row is an observation of the p-dim random vector.}
@@ -13,6 +13,8 @@ varband_cv(x, w = FALSE, lasso = FALSE, lamlist = NULL, nlam = 60,
 \item{w}{Logical. Should we use weighted version of the penalty or not? If \code{TRUE}, we use general weight. If \code{FALSE}, use unweighted penalty. Default is \code{FALSE}.}
 
 \item{lasso}{Logical. Should we use l1 penalty instead of hierarchical group lasso penalty? Note that by using l1 penalty, we lose the banded structure in the resulting estimate. And when using l1 penalty, the becomes CSCS (Convex Sparse Cholesky Selection) introduced in Khare et al. (2016). Default value for \code{lasso} is \code{FALSE}.}
+
+\item{K}{Integer between 0 and p - 1 (default), indicating the maximum bandwidth in the resulting estimate. A small value of K will result in a sparse estimate and small computing time.}
 
 \item{lamlist}{A list of non-negative tuning parameters \code{lambda}.}
 

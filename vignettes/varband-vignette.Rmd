@@ -10,7 +10,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-The `varband` package contains the implementations of the variable banding method for learning local dependence and estimating large sparse precision matrix in the setting where variables have a natural ordering. The details of the method can be found in [Yu, Bien (2016) *Learning Local Dependence in Ordered Data*(under revision)](http://arxiv.org/abs/1604.07451).
+The `varband` package contains the implementations of the variable banding method for learning local dependence and estimating large sparse precision matrix in the setting where variables have a natural ordering. The details of the method can be found in [Yu, Bien (2017) *Learning Local Dependence in Ordered Data*(accepted to the Journal of Machine Learning Research)](http://arxiv.org/abs/1604.07451).
 In particular, given a data matrix $X \in \mathbb{R}^{n \times p}$, with each row an observation of a $p$ dimensional random vector $X \sim N(0, \Omega^{-1} = (L^T L)^{-1})$, this package implements a penalized likelihood-based approach of estimating $L$ with data-adaptively variable bandwidth.
 This document serves as an introduction of using the package.
 
@@ -42,7 +42,7 @@ matimage(S, main = "Sample covariance matrix")
 ```
 
 ## Estimating $L$ with a fixed tuning parameter
-Besides the sample covariance matrix, the main function `varband` takes three more arguments. First it takes a value of the tuning parameter $\lambda$, which is a nonnegative constant that controls the sparsity level induced in the resulting estimator. The function also requires an initial estimate, which could essentially be any lower triangular matrix with positive diagonals. Finally one needs to specify the weighting scheme `w` to choose between a weighted and an unweighted estimator. The unweighted estimator puts more penalty and thus produces a sparser estimator than the weighted one with the same value of $\lambda$. As shown in the paper, the unweighted estimator is more efficient to compute and has better practical performance, while the weighted estimator enjoys better theoretical properties.
+Besides the sample covariance matrix, the main function `varband` takes three more arguments. First it takes a value of the tuning parameter $\lambda$, which is a non-negative constant that controls the sparsity level induced in the resulting estimator. The function also requires an initial estimate, which could essentially be any lower triangular matrix with positive diagonals. Finally one needs to specify the weighting scheme `w` to choose between a weighted and an unweighted estimator. The unweighted estimator puts more penalty and thus produces a sparser estimator than the weighted one with the same value of $\lambda$. As shown in the paper, the unweighted estimator is more efficient to compute and has better practical performance, while the weighted estimator enjoys better theoretical properties.
 ```{r, fig.height = 4, fig.width = 7, fig.align='center'}
 # use identity matrix as initial estimate
 init <- diag(p)
@@ -53,7 +53,7 @@ matimage(L_weighted, main = "weighted, lam = 0.4")
 matimage(L_unweighted, main = "unweighted, lam = 0.4")
 ```
 
-## Computing estimators along the a tuning parameter path
+## Computing estimators along a tuning parameter path
 In most cases, one does not know the exact value of tuning parameter $\lambda$ that should be used. The function `varband_path` gets $\hat{L}$ along a grid of $\lambda$ values. 
 Users can specify their own grid of $\lambda$ values (via `lamlist`). Alternatively, a path of decreasing tuning parameter of user-specified length (via `nlam`)  will be generated and returned. In this situation, user also needs to specify `flmin`, the ratio of the smallest and largest $\lambda$ value in the list, where the largest $\lambda$ is computed such that the resulting estimator is a diagonal matrix.
 And we can plot them to see if they cover the full spectrum of sparsity level. 
@@ -91,3 +91,35 @@ par(mfrow = c(1,2), mar = c(0, 0, 2, 0))
 matimage(res_cv$L_fit, main = "Fit")
 matimage(res_cv$L_refit, main = "Refit")
 ```
+
+## Estimating $L$ with a maximum number of bandwidth 
+Estimating large $L$ can sometimes be time consuming. Also in this case where $p$ is large, we tend to concentrate on learning the local dependence among variables that are not too far away. Therefore, to speed up computation without losing too much of the modeling power, we consider estimating $L$ with the constraint that the resulting estimate is at most $K$ banded for some value of $K \leq p - 1$, i.e., $\hat{L}_{ij} = 0$ for all $i>j$ such that $i - j > K$.
+
+Computationally, incorporating this constraint is equivalent to solving a series of row problems of size $K + 1$ rather than $r$ for all $r > K + 1$, with speicific design matrices. Statistically, that means that we are only estimating the local dependence of $X_j$ only on its $K$ closest predecessors.
+
+To do so in `varband`, we can simply specify the value of parameter `K` in the function calls of `varband`, `varband_path` or `varband_cv`. For example, using the same example in estimating $L$ with a fixed tuning parameter, we can do
+```{r, fig.height = 4, fig.width = 7, fig.align='center'}
+# use identity matrix as initial estimate
+init <- diag(p)
+L_weighted <- varband(S = S, lambda = 0.4, init = init, K = 20, w = TRUE)
+L_unweighted <- varband(S = S, lambda = 0.4, init = init, K = 20, w = FALSE)
+par(mfrow = c(1,2), mar = c(0, 0, 2, 0))
+matimage(L_weighted, main = "weighted, lam = 0.4")
+matimage(L_unweighted, main = "unweighted, lam = 0.4")
+```
+Recall the different sparsity patterns when we do not specify the value of $K$, in which the default value of $K$ is set to $p - 1$, i.e., there is no constraint on the maximum bandwidth.
+
+## Estimating $L$ with $\ell_1$ penalty 
+Finally, the package `varband` also implements an algorithm that estimates $L$ by maximizing the $\ell_1$-penalized likelihood, which is a method called `CSCS` proposed by Khare et al., (2016). The resulting estimate is less interpretable, since it does not have a structured sparsity, and it allows entries far from the diagonal to be non-zero, losing the notion of ‘local’.
+
+To do so, specify the argument `lasso = TRUE` in the function calls to `varband`, `varband_path` or `varband_cv`. For example,
+```{r, fig.height = 4, fig.width = 7, fig.align='center'}
+# use identity matrix as initial estimate
+init <- diag(p)
+L_unweighted <- varband(S = S, lambda = 0.4, init = init, K = 20, w = FALSE)
+L_CSCS <- varband(S = S, lambda = 0.4, init = init, K = 20, lasso = TRUE)
+par(mfrow = c(1,2), mar = c(0, 0, 2, 0))
+matimage(L_unweighted, main = "unweighted, lam = 0.4")
+matimage(L_CSCS, main = "CSCS, lam = 0.4")
+```
+Note that by using $\ell_1$ penalty, we can also include a maximum bandwidth in the resulting estimate.

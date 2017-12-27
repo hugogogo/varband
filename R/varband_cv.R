@@ -5,6 +5,7 @@
 #' @param x A n-by-p sample matrix, each row is an observation of the p-dim random vector.
 #' @param w Logical. Should we use weighted version of the penalty or not? If \code{TRUE}, we use general weight. If \code{FALSE}, use unweighted penalty. Default is \code{FALSE}.
 #' @param lasso Logical. Should we use l1 penalty instead of hierarchical group lasso penalty? Note that by using l1 penalty, we lose the banded structure in the resulting estimate. And when using l1 penalty, the becomes CSCS (Convex Sparse Cholesky Selection) introduced in Khare et al. (2016). Default value for \code{lasso} is \code{FALSE}.
+#' @param K Integer between 0 and p - 1 (default), indicating the maximum bandwidth in the resulting estimate. A small value of K will result in a sparse estimate and small computing time.
 #' @param lamlist A list of non-negative tuning parameters \code{lambda}.
 #' @param nlam If lamlist is not provided, create a lamlist with length \code{nulam}. Default is 60.
 #' @param flmin If lamlist is not provided, create a lamlist with ratio of the smallest and largest lambda in the list equal to \code{flmin}. Default is 0.01.
@@ -34,7 +35,9 @@
 #' @export
 #'
 #' @seealso \code{\link{varband}} \code{\link{varband_path}}
-varband_cv <- function(x, w = FALSE, lasso = FALSE, lamlist = NULL, nlam = 60, flmin = 1e-2, folds = NULL, nfolds = 5) {
+varband_cv <- function(x, w = FALSE, lasso = FALSE, K = -1,
+                       lamlist = NULL, nlam = 60, flmin = 1e-2,
+                       folds = NULL, nfolds = 5) {
   n <- nrow(x)
   p <- ncol(x)
 
@@ -62,7 +65,7 @@ varband_cv <- function(x, w = FALSE, lasso = FALSE, lamlist = NULL, nlam = 60, f
     x_tr <- scale(x_tr, center = meanx, scale = FALSE)
     S_tr <- crossprod(x_tr) / (dim(x_tr)[1])
 
-    path_fit <- varband_path(S = S_tr, w = w, lasso = lasso,
+    path_fit <- varband_path(S = S_tr, w = w, lasso = lasso, K = K,
                              lamlist = lamlist)$path
     path_refit <- refit_path(S = S_tr, path = path_fit)
 
@@ -87,8 +90,12 @@ varband_cv <- function(x, w = FALSE, lasso = FALSE, lamlist = NULL, nlam = 60, f
   i1se_refit <- min(which(m_refit < m_refit[ibest_refit] + se_refit[ibest_refit]))
 
 
-  fit_cv <- varband(S = S, lambda = lamlist[ibest_fit], init = path_fit[, , ibest_fit], w = w, lasso = lasso)
-  refit_cv <- varband(S = S, lambda = lamlist[ibest_refit], init = path_refit[, , ibest_refit], w = w, lasso = lasso)
+  fit_cv <- varband(S = S, lambda = lamlist[ibest_fit],
+                    init = path_fit[, , ibest_fit], K = K,
+                    w = w, lasso = lasso)
+  refit_cv <- varband(S = S, lambda = lamlist[ibest_refit],
+                      init = path_refit[, , ibest_refit], K = K,
+                      w = w, lasso = lasso)
   refit_cv <- refit_matrix(S = S, mat = refit_cv)
 
   return(list(errs_fit = errs_fit, errs_refit = errs_refit,
